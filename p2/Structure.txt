@@ -17,13 +17,26 @@ have the same mutex to protect them, the array is only accessiable by one thread
 any race conditions. 
 7. How many convars are you going to use? For each convar:
 Convar 1: 
-used to protect the queues, and signals when either one has gained elements in case a clerk is waiting. This will
+used to protect the queues, and signals when a clerk finishes checking in a person from the queue
+c
+Convar 3: 
+indicates when either queue has gained elements in case a clerk is waiting. This will
 be associated with the queue mutex. Once this signals, a clerk should take that new customer. 
 
 Convar 2: 
-This is used when the gobal statistics change so that main can recalculate values. 
+This is used when the gobal statistics change so that main can recalculate values. -this is possibly going to be combined with C3
 (a) Describe the condition that the convar will represent.
 (b) Which mutex is associated with the convar? Why?
 (c) What operation should be performed once pthread cond wait() has been unblocked and reacquired the mutex?
+
+
 8. Briefly sketch the overall algorithm you will use. You may use sentences such as: If clerk i finishes
 service, release clerkImutex.
+
+There are three primary pieces of code, but only two that run concurrently. The other is only setup and calculations
+at the end. 
+The clerk functionality is as follows: 
+
+Wait for QueueMutex to unlock, then, if there is a customer in the business queue, pop that off, if not check the economy queue. Pop 
+customer if econ queue if there, if not, wait on the convar for the queue statistics (C3). Once it has a customer, print the current time 
+and log the starting time. Usleep for the time dictated by the customer, then 
