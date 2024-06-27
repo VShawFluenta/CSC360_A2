@@ -19,7 +19,7 @@ any race conditions.
 Convar 1: 
 used to protect the queues, and signals when a clerk finishes checking in a person from the queue
 c
-Convar 3: 
+Convar 3:   
 indicates when either queue has gained elements in case a clerk is waiting. This will
 be associated with the queue mutex. Once this signals, a clerk should take that new customer. 
 
