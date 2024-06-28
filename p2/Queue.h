@@ -5,10 +5,16 @@
 #include <unistd.h>
 #include <errno.h>
 
-customer * pop(){}
+typedef struct customer{
+	int id;
+	int arrivalTime;
+	int serviceTime; //e.g., service time
+    struct customer *next; 
+}customer;
 
-customer * peek(){
-}
+customer * pop(); 
 
-void push(customer * cust){}
+customer * peek(); 
+
+void push(customer * cust);
 
