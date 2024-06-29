@@ -7,8 +7,9 @@
 
 typedef struct customer{
 	int id;
+	int business; 
 	int arrivalTime;
-	int serviceTime; //e.g., service time
+	int serviceTime; 
     struct customer *next; 
 }customer;
 

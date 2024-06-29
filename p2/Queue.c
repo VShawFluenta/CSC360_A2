@@ -1,6 +1,7 @@
 //Queue to hold customers, by Victoria Shaw
 #include <stddef.h>
 #include <stdio.h> 
+#include <stdlib.h>
 #include "Queue.h"
 
 // typedef struct customer{
@@ -38,12 +39,28 @@ void push(customer * cust){
 
 }
 
-customer * makeCustomer(int id, int arrivalTime, int serviceTime){
+customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
+    printf("making customer\n"); 
     customer * newCustomer = malloc(sizeof(customer));
+     if (newCustomer == NULL) {
+        printf("Memory allocation failed\n");
+        return NULL;  // Handle memory allocation failure
+    }else{
+        printf("sucessfully allocated space for new customer\n"); 
+    }
     newCustomer-> id = id; 
+    printf("made the id\n"); 
+    newCustomer -> business = business; 
+        printf("made the business\n"); 
+  newCustomer -> serviceTime = serviceTime; 
+            printf("made the service time\n"); 
+
     newCustomer -> arrivalTime= arrivalTime; 
-    newCustomer -> serviceTime = serviceTime; 
+        printf("made the arrival time\n"); 
+   // printf("whyyyyyyyyy\n");
 
+  
+    printf("finished making new customer\n"); 
+  //  printf("nooooooooo\n"); 
     return newCustomer; 
-
 }
