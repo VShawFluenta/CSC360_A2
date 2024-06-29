@@ -27,6 +27,8 @@ pthread_mutex_t timeMutex;
 pthread_mutex_t businessStats; 
 pthread_mutex_t econStats;
 pthread_mutex_t queue; 
+pthread_cond_t condQueue; 
+pthread_mutex_t globalNumbers; 
 
 
 
@@ -63,11 +65,50 @@ void sortCustomers(customer* arrayToSort, customer * rawArray, int N){
     //customer sortedArray[sizeof(arrayToSort)/sizeof(customer)]; 
     
 }
+double getCurrentSimulationTime(){
+	
+	struct timeval cur_time;
+	double cur_secs, init_secs;
+	
+	//pthread_mutex_lock(&start_time_mtex); you may need a lock here
+	init_secs = (start_time.tv_sec + (double) start_time.tv_usec / 1000000);
+	//pthread_mutex_unlock(&start_time_mtex);
+	
+	gettimeofday(&cur_time, NULL);
+	cur_secs = (cur_time.tv_sec + (double) cur_time.tv_usec / 1000000);
+	
+	return cur_secs - init_secs;
+}
 
 void clerk(){
+    pthread_mutex_lock(&globalNumbers);
     while(customersToProcess !=0){//might need a mutex on this
+        pthread_mutex_unlock(&globalNumbers); 
+        pthread_mutex_lock(&queue); 
+        customer current; 
+        int found =0; 
+       // pthread_mutex_lock(&businessStats); 
+        if(businessQ.quantity >=1){
+             current = *pop(&businessQ); 
+             found =1; 
+        }else if (economyQ.quantity >=1){
+             current = *pop(&economyQ); 
+             found =1;
+        } else{
+            pthread_cond_wait(&condQueue, &queue);
+        }
+        pthread_mutex_unlock(&queue); 
+        if(found){
+            pthread_mutex_lock(&globalNumbers); 
+            customersToProcess --; 
+            pthread_mutex_unlock(&globalNumbers); 
+            printf("processing customer %d, time %f\n", current.id, getCurrentSimulationTime()); 
+            usleep(current.serviceTime*100000);
+        }
 
 
+
+        pthread_mutex_lock(&globalNumbers);
     }
 }
 int StringToInt(char * line){//NOT NEEDED ANYMORE!!
@@ -102,24 +143,11 @@ void printCust(customer * cust){
     }
 }
 
-double getCurrentSimulationTime(){
-	
-	struct timeval cur_time;
-	double cur_secs, init_secs;
-	
-	//pthread_mutex_lock(&start_time_mtex); you may need a lock here
-	init_secs = (start_time.tv_sec + (double) start_time.tv_usec / 1000000);
-	//pthread_mutex_unlock(&start_time_mtex);
-	
-	gettimeofday(&cur_time, NULL);
-	cur_secs = (cur_time.tv_sec + (double) cur_time.tv_usec / 1000000);
-	
-	return cur_secs - init_secs;
-}
+
 int loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to check for invalid times 
     int N = 0; 
     int c =0; 
-    customer rawCust[N];
+   // customer rawCust[N];
     char line[20];
     fgets(line, 20 , inputfile); //can also use stdin instead of open_file
     N = atoi(line); 
@@ -194,41 +222,46 @@ int loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to chec
 }
 
 void dispatcher(customer * rawQueue[50], int N){
+    printf("starting dispatch\n"); 
 int i = 0; 
     while(N-i>0){
         pthread_mutex_lock(&timeMutex);
-        printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
+       // printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
         if(getCurrentSimulationTime()>=rawQueue[i]->arrivalTime/10){
             pthread_mutex_lock(&businessStats);
             if(rawQueue[i]-> business){
                 pthread_mutex_lock(&businessStats);
-                push(rawQueue[i], businessQ); 
+                push(rawQueue[i], &businessQ); 
                 printf("Customer %d entered the business queue, the current length is %d\n", rawQueue[i]->id, businessQ.quantity);
                 pthread_mutex_unlock(&businessStats);
                 i++;
             }else{
                 pthread_mutex_lock(&econStats);
-                push(rawQueue[i], economyQ); 
+                push(rawQueue[i], &economyQ); 
                 printf("Customer %d entered the economy queue, the current length is %d\n", rawQueue[i]->id, economyQ.quantity);
                 pthread_mutex_unlock(&econStats);
                 i++;
             }
         }else{
             pthread_mutex_unlock(&timeMutex);
-            usleep(5000); 
+            //usleep(5000); 
         }
         
     }
 }
 
 int main(int argc, char ** argv){
-    double sumBusinessWait=0; 
-    double sumEconomyWait =0; 
-    pthread_t threadArray[5]; 
+//     double sumBusinessWait=0; 
+//     double sumEconomyWait =0; 
+//     pthread_t threadArray[5]; 
     economyQ.quantity = 0; 
     businessQ.quantity = 0;  
+    pthread_cond_init(&condQueue, NULL); 
+    pthread_mutex_init(&queue, NULL); 
+        pthread_mutex_init(&timeMutex, NULL); 
+
     
-    int rc; 
+    //int rc; 
 
     // for(int i =0; i < 5; i ++){
     //     if ((rc = pthread_create(&threadArray[i], NULL, clerk, NULL))) {
@@ -258,6 +291,7 @@ int main(int argc, char ** argv){
 
     gettimeofday(&start_time, NULL); // record simulation start time
     dispatcher(ArrayOfCust,N);
+    clerk();
 
 
 
@@ -272,5 +306,8 @@ int main(int argc, char ** argv){
     // for (int i = 0; i < 5; ++i) {
 	// 	pthread_join(threadArray[i], NULL);
 	// }
+    pthread_cond_destroy(&condQueue); 
+    pthread_mutex_destroy(&queue); 
+        pthread_mutex_destroy(&timeMutex); 
 
 }

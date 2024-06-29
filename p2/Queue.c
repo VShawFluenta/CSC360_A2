@@ -13,32 +13,32 @@
 
 
 
-customer * pop(customerQueue Q){
-    customer * top = Q.head; 
-    Q.head = Q.head -> next; 
-    Q.quantity --; 
+customer * pop(customerQueue *Q){
+    customer * top = Q->head; 
+    Q->head = Q->head -> next; 
+    Q->quantity --; 
     return top; 
 }
 
-customer * peek(customerQueue Q){
-    customer * top = Q.head; 
+customer * peek(customerQueue *Q){
+    customer * top = Q->head; 
     return top; 
 }
 
-void push(customer * cust, customerQueue Q){
-        printf("the starting quantity is %d\n", Q.quantity); 
+void push(customer * cust, customerQueue *Q){
+//        printf("the starting quantity is %d\n", Q->quantity); 
 
     printf("pushing customer %i\n", cust-> id); 
-    if(Q.head == NULL){
-       Q.head = cust; 
-        Q.tail = cust; 
+    if(Q->head == NULL){
+       Q->head = cust; 
+        Q->tail = cust; 
         printf("queue was empty\n"); 
     } else{
-        Q.tail->next = cust; 
-        Q.tail = cust;
+        Q->tail->next = cust; 
+        Q->tail = cust;
     }
-    Q.quantity ++; 
-    printf("the current quantity is %d\n", Q.quantity); 
+    Q->quantity ++; 
+   // printf("the current quantity is %d\n", Q->quantity); 
 
 }
 

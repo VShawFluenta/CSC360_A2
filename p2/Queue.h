@@ -10,6 +10,7 @@ typedef struct customer{
 	int business; 
 	float arrivalTime;
 	float serviceTime; 
+	float waitTime; 
     struct customer *next; 
 }customer;
 
@@ -19,11 +20,11 @@ typedef struct customerQueue{
 	int quantity; 
 }customerQueue;
 
-customer * pop(); 
+customer * pop(customerQueue* Q); 
 
-customer * peek(); 
+customer * peek(customerQueue* Q); 
 
-void push(customer * cust, customerQueue Q);
+void push(customer * cust, customerQueue* Q);
 
 customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime); 
 
