@@ -26,19 +26,24 @@ customer * peek(customerQueue Q){
 }
 
 void push(customer * cust, customerQueue Q){
+        printf("the starting quantity is %d\n", Q.quantity); 
+
+    printf("pushing customer %i\n", cust-> id); 
     if(Q.head == NULL){
        Q.head = cust; 
         Q.tail = cust; 
+        printf("queue was empty\n"); 
     } else{
         Q.tail->next = cust; 
         Q.tail = cust;
     }
     Q.quantity ++; 
+    printf("the current quantity is %d\n", Q.quantity); 
 
 }
 
 customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
-    printf("making customer\n"); 
+   // printf("making customer\n"); 
     customer * newCustomer = malloc(sizeof(customer));
      if (newCustomer == NULL) {
         printf("Memory allocation failed\n");

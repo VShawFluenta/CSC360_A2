@@ -13,6 +13,24 @@
 #include "Queue.h"
 
 int customersToProcess =0; 
+static struct timeval start_time; // simulation start time
+
+customerQueue businessQ;
+customerQueue economyQ; 
+
+ 
+
+
+
+//Make a time calc mutex here
+pthread_mutex_t timeMutex; 
+pthread_mutex_t businessStats; 
+pthread_mutex_t econStats;
+pthread_mutex_t queue; 
+
+
+
+
 // customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
 //     printf("making customer\n"); 
 //     customer * newCustomer = malloc(sizeof(customer));
@@ -39,6 +57,8 @@ int customersToProcess =0;
 //     return newCustomer; 
 // }
 
+
+//MUST IMPLEMENT!!!!!!
 void sortCustomers(customer* arrayToSort, customer * rawArray, int N){
     //customer sortedArray[sizeof(arrayToSort)/sizeof(customer)]; 
     
@@ -74,14 +94,29 @@ void printCust(customer * cust){
     }else {
      //   printf("Yay, you found a valid customer\n"); 
     }
-    printf("id is %d, Arrival time is %d, service time is %d", cust->id, cust->arrivalTime, cust->serviceTime); 
+    printf("id is %d, Arrival time is %f, service time is %f", cust->id, cust->arrivalTime, cust->serviceTime); 
     if(cust->business){
-        printf(" and this customer is in business\n"); 
+        printf(" and is in business\n"); 
     } else {
-        printf(" and this customer is in economy class\n"); 
+        printf(" and is in economy class\n"); 
     }
 }
-void loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to check for invalid times 
+
+double getCurrentSimulationTime(){
+	
+	struct timeval cur_time;
+	double cur_secs, init_secs;
+	
+	//pthread_mutex_lock(&start_time_mtex); you may need a lock here
+	init_secs = (start_time.tv_sec + (double) start_time.tv_usec / 1000000);
+	//pthread_mutex_unlock(&start_time_mtex);
+	
+	gettimeofday(&cur_time, NULL);
+	cur_secs = (cur_time.tv_sec + (double) cur_time.tv_usec / 1000000);
+	
+	return cur_secs - init_secs;
+}
+int loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to check for invalid times 
     int N = 0; 
     int c =0; 
     customer rawCust[N];
@@ -131,8 +166,8 @@ void loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to che
             
         //}
         int id = atoi(cID); 
-        int arrivalTime = atoi(cArrival);
-        int serviceTime = atoi(cServiceTime);
+        int arrivalTime = (float)atoi(cArrival);
+        int serviceTime = (float)atoi(cServiceTime);
     // int id, business, arrivalTime, serviceTime;
     //  fscanf(inputfile, "%d %d %d %d", &id, &business, &arrivalTime, &serviceTime);
         
@@ -155,17 +190,48 @@ void loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to che
 
     //for()
     //sortCustomers(EndArray, rawCust, N);
+    return N; 
+}
+
+void dispatcher(customer * rawQueue[50], int N){
+int i = 0; 
+    while(N-i>0){
+        pthread_mutex_lock(&timeMutex);
+        printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
+        if(getCurrentSimulationTime()>=rawQueue[i]->arrivalTime/10){
+            pthread_mutex_lock(&businessStats);
+            if(rawQueue[i]-> business){
+                pthread_mutex_lock(&businessStats);
+                push(rawQueue[i], businessQ); 
+                printf("Customer %d entered the business queue, the current length is %d\n", rawQueue[i]->id, businessQ.quantity);
+                pthread_mutex_unlock(&businessStats);
+                i++;
+            }else{
+                pthread_mutex_lock(&econStats);
+                push(rawQueue[i], economyQ); 
+                printf("Customer %d entered the economy queue, the current length is %d\n", rawQueue[i]->id, economyQ.quantity);
+                pthread_mutex_unlock(&econStats);
+                i++;
+            }
+        }else{
+            pthread_mutex_unlock(&timeMutex);
+            usleep(5000); 
+        }
+        
+    }
 }
 
 int main(int argc, char ** argv){
     double sumBusinessWait=0; 
     double sumEconomyWait =0; 
     pthread_t threadArray[5]; 
+    economyQ.quantity = 0; 
+    businessQ.quantity = 0;  
     
     int rc; 
 
     // for(int i =0; i < 5; i ++){
-    //     if ((rc = pthread_create(&threadArray[i], NULL, clerk, ))) {
+    //     if ((rc = pthread_create(&threadArray[i], NULL, clerk, NULL))) {
 	// 		fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
 	// 		return EXIT_FAILURE;
 	// 	}
@@ -186,16 +252,22 @@ int main(int argc, char ** argv){
         printf("opened file\n"); 
     }
     customer * ArrayOfCust[50];
-    loadCustomers(inputfile, ArrayOfCust); 
-    for (int i =0; i < customersToProcess; i ++){
-        //printCust(ArrayOfCust[i]); 
-        free(ArrayOfCust[i]); 
-    }
+    int N = loadCustomers(inputfile, ArrayOfCust); 
+  
+
+
+    gettimeofday(&start_time, NULL); // record simulation start time
+    dispatcher(ArrayOfCust,N);
 
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~ clean up 
     fclose(inputfile); 
+      //~~~~~~~~~~~~~~ REMOVE WHEN DONE DEBUGGING!!
+    for (int i =0; i < N; i ++){
+        //printCust(ArrayOfCust[i]); 
+        free(ArrayOfCust[i]); 
+    }
 
     // for (int i = 0; i < 5; ++i) {
 	// 	pthread_join(threadArray[i], NULL);

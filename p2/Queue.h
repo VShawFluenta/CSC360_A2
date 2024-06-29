@@ -8,8 +8,8 @@
 typedef struct customer{
 	int id;
 	int business; 
-	int arrivalTime;
-	int serviceTime; 
+	float arrivalTime;
+	float serviceTime; 
     struct customer *next; 
 }customer;
 
