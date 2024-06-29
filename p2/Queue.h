@@ -13,9 +13,17 @@ typedef struct customer{
     struct customer *next; 
 }customer;
 
+typedef struct customerQueue{
+	customer * head; 
+	customer * tail; 
+	int quantity; 
+}customerQueue;
+
 customer * pop(); 
 
 customer * peek(); 
 
-void push(customer * cust);
+void push(customer * cust, customerQueue Q);
+
+customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime); 
 

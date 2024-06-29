@@ -11,31 +11,29 @@
 //     struct customer *next; 
 // }customer;
 
-customer  * tail = NULL; //points to the last node,
-customer * head = NULL; 
-int quantity =0; 
 
-customer * pop(){
-    customer * top = head; 
-    head = head -> next; 
-    quantity --; 
+
+customer * pop(customerQueue Q){
+    customer * top = Q.head; 
+    Q.head = Q.head -> next; 
+    Q.quantity --; 
     return top; 
 }
 
-customer * peek(){
-    customer * top = head; 
+customer * peek(customerQueue Q){
+    customer * top = Q.head; 
     return top; 
 }
 
-void push(customer * cust){
-    if(head == NULL){
-       head = cust; 
-        tail = cust; 
+void push(customer * cust, customerQueue Q){
+    if(Q.head == NULL){
+       Q.head = cust; 
+        Q.tail = cust; 
     } else{
-        tail->next = cust; 
-        tail = cust;
+        Q.tail->next = cust; 
+        Q.tail = cust;
     }
-    quantity ++; 
+    Q.quantity ++; 
 
 }
 
@@ -46,21 +44,21 @@ customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
         printf("Memory allocation failed\n");
         return NULL;  // Handle memory allocation failure
     }else{
-        printf("sucessfully allocated space for new customer\n"); 
+     //   printf("sucessfully allocated space for new customer\n"); 
     }
     newCustomer-> id = id; 
-    printf("made the id\n"); 
+   // printf("made the id\n"); 
     newCustomer -> business = business; 
-        printf("made the business\n"); 
-  newCustomer -> serviceTime = serviceTime; 
-            printf("made the service time\n"); 
+   //     printf("made the business\n"); 
+    newCustomer -> serviceTime = serviceTime; 
+    //        printf("made the service time\n"); 
 
     newCustomer -> arrivalTime= arrivalTime; 
-        printf("made the arrival time\n"); 
+    //    printf("made the arrival time\n"); 
    // printf("whyyyyyyyyy\n");
 
   
-    printf("finished making new customer\n"); 
+    //printf("finished making new customer\n"); 
   //  printf("nooooooooo\n"); 
     return newCustomer; 
 }

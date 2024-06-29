@@ -13,6 +13,31 @@
 #include "Queue.h"
 
 int customersToProcess =0; 
+// customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
+//     printf("making customer\n"); 
+//     customer * newCustomer = malloc(sizeof(customer));
+//      if (newCustomer == NULL) {
+//         printf("Memory allocation failed\n");
+//         return NULL;  // Handle memory allocation failure
+//     }else{
+//         printf("sucessfully allocated space for new customer\n"); 
+//     }
+//     newCustomer-> id = id; 
+//     printf("made the id\n"); 
+//     newCustomer -> business = business; 
+//         printf("made the business\n"); 
+//     newCustomer -> serviceTime = serviceTime; 
+//             printf("made the service time\n"); 
+
+//     newCustomer -> arrivalTime= arrivalTime; 
+//         printf("made the arrival time\n"); 
+//    // printf("whyyyyyyyyy\n");
+
+  
+//     printf("finished making new customer\n"); 
+//   //  printf("nooooooooo\n"); 
+//     return newCustomer; 
+// }
 
 void sortCustomers(customer* arrayToSort, customer * rawArray, int N){
     //customer sortedArray[sizeof(arrayToSort)/sizeof(customer)]; 
@@ -43,13 +68,13 @@ int StringToInt(char * line){//NOT NEEDED ANYMORE!!
 }
 
 void printCust(customer * cust){
-    printf("About to try and print a customer\n"); 
+    //printf("About to try and print a customer\n");
     if(cust ==NULL){
         printf("cust is NULL, can't print it\n"); 
     }else {
-        printf("Yay, you found a valid customer\n"); 
+     //   printf("Yay, you found a valid customer\n"); 
     }
-    printf("id is %d", cust->id); 
+    printf("id is %d, Arrival time is %d, service time is %d", cust->id, cust->arrivalTime, cust->serviceTime); 
     if(cust->business){
         printf(" and this customer is in business\n"); 
     } else {
@@ -66,60 +91,64 @@ void loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to che
     customersToProcess =N; 
     printf("N is %d\n", N); 
 
-    for(c =0; c<N; c ++){
-
-    // while( fgets(line, 20, inputfile)!=NULL){
-    //     char cID[20]; 
-    //     int IdIdx=0;  
-    //     int business =0; 
-    //     char cArrival[20]; 
-    //     int IdxA =0;
-    //     char cServiceTime[20]; 
-    //     int IdxS =0; 
-    //     printf("line is [%s]\n", line ); 
-    //     //for(int i =0; i < 20; i++){
-    //     int i =0; 
-    //         while(line[i] != ':'){
-    //             cID[IdIdx]= line[i]; 
-    //             IdIdx ++;
-    //             i ++; 
-    //         }
-    //         cID[IdIdx]='\0'; 
-    //        // printf("Id is %s\n", cID);
-    //         business = line[i++]-48; 
-    //         while(line[i] != ','){
-    //             cArrival[IdxA]= line[i]; 
-    //             IdxA ++; 
-    //             i ++; 
-    //         }
-    //         cServiceTime[IdxA] = '\0'; 
-    //         i ++;
-    //         while(line[i] != ','){
-    //             cServiceTime[IdxS]= line[i]; 
-    //             IdxS ++; 
-    //             i ++; 
-    //         }
-    //         cServiceTime[IdxS] = '\0'; 
+    while( fgets(line, 20, inputfile)!=NULL){
+        char cID[20]; 
+        int IdIdx=0;  
+        int business =0; 
+        char cArrival[20]; 
+        int IdxA =0;
+        char cServiceTime[20]; 
+        int IdxS =0; 
+        printf("line is [%s]\n", line ); 
+        //for(int i =0; i < 20; i++){
+        int i =0; 
+            while(line[i] != ':'){
+                cID[IdIdx]= line[i]; 
+                IdIdx ++;
+                i ++; 
+            }
+            cID[IdIdx]='\0'; 
+           // printf("Id is %s\n", cID);
+           i++; 
+            business = line[i++]-48; 
+            i++;
+            while(line[i] != ','){
+                cArrival[IdxA]= line[i]; 
+               // printf("new character of arrival time is %c\n", cArrival[IdxA]); 
+                IdxA ++; 
+                i ++; 
+            }
+            cArrival[IdxA] = '\0'; 
+            i ++;
+            while(line[i] != '\0' && line[i] != '\n'){
+                cServiceTime[IdxS]= line[i]; 
+                IdxS ++; 
+                i ++; 
+            }
+            cServiceTime[IdxS] = '\0'; 
 
 
             
-    //     //}
-    //     int id = atoi(cID); 
-    //     int arrivalTime = atoi(cArrival);
-    //     int serviceTime = atoi(cServiceTime);
-    int id, business, arrivalTime, serviceTime;
-        fscanf(inputfile, "%d %d %d %d", &id, &business, &arrivalTime, &serviceTime);
+        //}
+        int id = atoi(cID); 
+        int arrivalTime = atoi(cArrival);
+        int serviceTime = atoi(cServiceTime);
+    // int id, business, arrivalTime, serviceTime;
+    //  fscanf(inputfile, "%d %d %d %d", &id, &business, &arrivalTime, &serviceTime);
         
-    printf("int id is %d, business is %d, service time is %d, and arrival time is %d\n", id, business,serviceTime, arrivalTime);
+       // printf("int id is %d, business is %d, arrival time is %d,  service time is %d,\n", id, business, arrivalTime, serviceTime);
         //id = StringToInt(cID); 
         //arrivalTime = StringToInt(cArrival); 
         //serviceTime = StringToInt(cServiceTime); 
-        printf("about to make customer %d\n", c);
+      //  printf("about to make customer %d\n", c);
+
+//////MUST ADD CONDITION CHECKING!!!
+
         EndArray[c] = makeCustomer(id, business,  arrivalTime, serviceTime);
         if (EndArray[c] == NULL) {
             printf("Failed to create customer %d\n",c);
         }
-        printf("made customer %d\n", c); 
+       // printf("made customer %d\n", c); 
         printCust(EndArray[c]); 
         c ++; 
     }
@@ -157,9 +186,9 @@ int main(int argc, char ** argv){
         printf("opened file\n"); 
     }
     customer * ArrayOfCust[50];
-     loadCustomers(inputfile, ArrayOfCust); 
+    loadCustomers(inputfile, ArrayOfCust); 
     for (int i =0; i < customersToProcess; i ++){
-        printCust(ArrayOfCust[i]); 
+        //printCust(ArrayOfCust[i]); 
         free(ArrayOfCust[i]); 
     }
 
