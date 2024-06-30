@@ -1,0 +1,55 @@
+1. How many threads are you going to use? Specify the task that you intend each thread to perform.
+There will be 6 threads. One each for each clerk and a 6th for the "dispatcher" that will add customers to the queues
+
+
+2. Do the threads work independently? Or, is there an overall “controller” thread?
+The threads are all sort of independant, but there is a single thread that controls when customers 
+get added to the queues that the other threads interact with. 
+
+
+3. How many mutexes are you going to use? Specify the operation that each mutex will guard.
+There will be two mutexes. One that is used for both B and E queues, and another that is used for 
+protecting the global statitics such as averages. 
+
+4. Will the main thread be idle? If not, what will it be doing?
+Yes, it will be mostly idle. At the end it will compute the averages and other statistics 
+
+
+5. How are you going to represent customers? what type of data structure will you use?
+I will make a struct for customers. Before they are released to the queues they will be stored 
+in an array of structs, and then they will be put into one of two queues. 
+
+
+6. How are you going to ensure that data structures in your program will not be modified concurrently?
+There are 4 primary structes: two queues, 1 array, and one collection of global statistics. The two arrays will 
+have the same mutex to protect them, the array is only accessiable by one thread, meaning that there shouldn't be 
+any race conditions. 
+
+
+7. How many convars are you going to use? For each convar:
+Convar 1: 
+used to protect the queues, and signals when a clerk finishes checking in a person from the queue
+c
+
+
+Convar 3:   
+indicates when either queue has gained elements in case a clerk is waiting. This will
+be associated with the queue mutex. Once this signals, a clerk should take that new customer. 
+
+Convar 2: 
+This is used when the gobal statistics change so that main can recalculate values. -this is possibly going to be combined with C3
+(a) Describe the condition that the convar will represent.
+(b) Which mutex is associated with the convar? Why?
+(c) What operation should be performed once pthread cond wait() has been unblocked and reacquired the mutex?
+
+
+8. Briefly sketch the overall algorithm you will use. You may use sentences such as: If clerk i finishes
+service, release clerkImutex.
+
+There are three primary pieces of code, but only two that run concurrently. The other is only setup and calculations
+at the end. 
+The clerk functionality is as follows: 
+
+Wait for QueueMutex to unlock, then, if there is a customer in the business queue, pop that off, if not check the economy queue. Pop 
+customer if econ queue if there, if not, wait on the convar for the queue statistics (C3). Once it has a customer, print the current time 
+and log the starting time. Usleep for the time dictated by the customer, then 
