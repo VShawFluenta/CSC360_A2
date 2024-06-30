@@ -28,7 +28,6 @@ customer * peek(customerQueue *Q){
 void push(customer * cust, customerQueue *Q){
 //        printf("the starting quantity is %d\n", Q->quantity); 
 
-    printf("pushing customer %i\n", cust-> id); 
     if(Q->head == NULL){
        Q->head = cust; 
         Q->tail = cust; 
@@ -38,6 +37,8 @@ void push(customer * cust, customerQueue *Q){
         Q->tail = cust;
     }
     Q->quantity ++; 
+        printf("pushing customer %i, Arrival time is %.4f, and service time is %.4f\n", Q->tail-> id, Q->tail-> arrivalTime, Q->tail-> serviceTime); 
+
    // printf("the current quantity is %d\n", Q->quantity); 
 
 }
