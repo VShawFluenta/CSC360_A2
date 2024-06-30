@@ -82,7 +82,7 @@ void push(customer cust, customerQueue * Q){
 
     }
     Q->quantity ++; 
-        printf("pushing customer %i, Arrival time is %.4f, and service time is %.4f\n", Q->queueArray[Q->tail].id, Q->queueArray[Q->tail].arrivalTime, Q->queueArray[Q->tail].serviceTime); 
+        // printf("pushing customer %i, Arrival time is %.4f, and service time is %.4f\n", Q->queueArray[Q->tail].id, Q->queueArray[Q->tail].arrivalTime, Q->queueArray[Q->tail].serviceTime); 
 
    // printf("the current quantity is %d\n", Q->quantity); 
 
@@ -149,7 +149,7 @@ long int clerkid = (long int) clerkidVoid;
     pthread_mutex_lock(&globalNumbers);
     int i =0; 
     while(customersToProcess !=0){//might need a mutex on this
-        printf("starting search %d\n", i); 
+        // printf("starting search %d\n", i); 
     pthread_mutex_unlock(&globalNumbers); 
     pthread_mutex_lock(&queue); 
         customer current; 
@@ -188,10 +188,10 @@ long int clerkid = (long int) clerkidVoid;
             pthread_mutex_lock(&globalNumbers); 
             if(current.business){
                 sumBusinessWait += wait; 
-                printf("The new sum of business wait times is %f\n", sumBusinessWait);
+                // printf("The new sum of business wait times is %f\n", sumBusinessWait);
             }else {
                 sumEconomyWait += wait; 
-                printf("The new sum of economy wait times is %f\n", sumEconomyWait);
+                // printf("The new sum of economy wait times is %f\n", sumEconomyWait);
 
             }
             pthread_mutex_unlock(&globalNumbers);             
@@ -258,7 +258,8 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
         char cArrival[20]; 
         int IdxA =0;
         char cServiceTime[20]; 
-        int IdxS =0; 
+        int IdxS =0;
+        int foundinvalid =0;  
         // printf("line is [%s]\n", line ); 
         //for(int i =0; i < 20; i++){
         int i =0; 
@@ -273,7 +274,10 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
             business = line[i++]-48; 
             i++;
             while(line[i] != ','){
-                cArrival[IdxA]= line[i]; 
+                cArrival[IdxA]= line[i];
+                // if(line[i]== '.' ||line[i]== '-') {
+                //     foundinvalid ++;
+                // }
                // printf("new character of arrival time is %c\n", cArrival[IdxA]); 
                 IdxA ++; 
                 i ++; 
@@ -282,6 +286,9 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
             i ++;
             while(line[i] != '\0' && line[i] != '\n'){
                 cServiceTime[IdxS]= line[i]; 
+                if(line[i]== '.' || line[i]== '-' ) {
+                    foundinvalid ++;
+                }
                 IdxS ++; 
                 i ++; 
             }
@@ -293,6 +300,9 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
         int id = atoi(cID); 
         int arrivalTime = (float)atoi(cArrival);
         int serviceTime = (float)atoi(cServiceTime);
+        // if(arrivalTime < 0 || serviceTime<=0){
+        //     foundinvalid ++; 
+        // }
     // int id, business, arrivalTime, serviceTime;
     //  fscanf(inputfile, "%d %d %d %d", &id, &business, &arrivalTime, &serviceTime);
         
@@ -303,15 +313,20 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
       //  printf("about to make customer %d\n", c);
 
 //////MUST ADD CONDITION CHECKING!!!
+        if(foundinvalid==0){
+            ArrayOfCust[c] = makeCustomer(id, business,  arrivalTime, serviceTime);
+            if (ArrayOfCust[c] == NULL) {
+                printf("Failed to create customer %d\n",c);
+            }
+                        c++;
 
-        ArrayOfCust[c] = makeCustomer(id, business,  arrivalTime, serviceTime);
-        if (ArrayOfCust[c] == NULL) {
-            printf("Failed to create customer %d\n",c);
+        }else{
+            printf("There was an invlid entry with %d issues\n", foundinvalid); 
+
         }
        // printf("made customer %d\n", c); 
     //    printf("Just loaded customer with "); 
         // printCust(ArrayOfCust[c]); 
-        c ++; 
     }
 
     //for()
@@ -331,7 +346,7 @@ void * dispatcher(){
     //customer ** ArrayOfCust = (customer **)voidArray; 
     //rawQueue++; 
     int N = customersToProcess; 
-    printf("starting dispatch, there are %d customers\n", N); 
+    printf("Airline is opening, starting dispatch, there will be %d customers today\n", N); 
     int i = 0; 
                // printCust(ArrayOfCust[2]);
 
@@ -355,7 +370,7 @@ void * dispatcher(){
             if(ArrayOfCust[i]-> business==1){
                 // pthread_mutex_lock(&businessStats);
                 push(*ArrayOfCust[i], &businessQ); 
-                printf("Customer %d entered the business queue at %f, the current length is %d\n", ArrayOfCust[i]->id,getCurrentSimulationTime(), businessQ.quantity);
+                printf("Customer %d entered the business queue at %f(s), the current queue length is %d\n", ArrayOfCust[i]->id,getCurrentSimulationTime(), businessQ.quantity);
                 
                 pthread_mutex_unlock(&businessStats);
                 pthread_cond_signal(&condQueue);
@@ -365,7 +380,7 @@ void * dispatcher(){
             }else{
                 // pthread_mutex_lock(&econStats);
                 push(*ArrayOfCust[i], &economyQ); 
-                printf("Customer %d entered the economy queue at %f, the current length is %d\n", ArrayOfCust[i]->id, getCurrentSimulationTime(),economyQ.quantity);
+                printf("Customer %d entered the economy queue at %f(s), the current queue length is %d\n", ArrayOfCust[i]->id, getCurrentSimulationTime(),economyQ.quantity);
                 // pthread_mutex_unlock(&econStats);
                 pthread_cond_signal(&condQueue);
                 // printf("finished signaling that a customer was added\n"); 
