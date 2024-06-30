@@ -183,7 +183,7 @@ long int clerkid = (long int) clerkidVoid;
             printf("I am clerk %ld and I am processing customer %d, starting at time %f(s), expected service time %.2f seconds\n",clerkid, current.id, start, current.serviceTime/10); 
             usleep(current.serviceTime*100000);
             float end = getCurrentSimulationTime(); 
-            float wait = end - current.arrivalTime/10; 
+            float wait = start-current.arrivalTime/10; 
             printf("Clerk %ld finished with customer %d, started at  %.2f(s) and finished at %.2f(s). Wait time was %.3f(s)\n",clerkid, current.id, start, end, wait); 
             pthread_mutex_lock(&globalNumbers); 
             if(current.business){
@@ -202,7 +202,9 @@ long int clerkid = (long int) clerkidVoid;
         //pthread_mutex_lock(&globalNumbers);
         i ++; 
     }
-    printf("DONE CLERK FUNCTION\n"); 
+    printf("DONE CLERK FUNCTION %ld\n", clerkid); 
+                    pthread_cond_signal(&condQueue);
+
     return NULL;
 }
 int StringToInt(char * line){//NOT NEEDED ANYMORE!!
@@ -423,7 +425,7 @@ int main(int argc, char ** argv){
   int rc; 
     gettimeofday(&start_time, NULL); // record simulation start time
 
-    for(long int i =0; i < 1; i ++){
+    for(long int i =0; i < 5; i ++){
         if ((rc = pthread_create(&threadArray[i], NULL, clerk, (void* )i))) {
 			fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
 			return EXIT_FAILURE;
@@ -449,7 +451,7 @@ int main(int argc, char ** argv){
     //    // free(ArrayOfCust[i]); 
     // }
 
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 5; ++i) {
 		pthread_join(threadArray[i], NULL);
 	}
     		pthread_join(dispatcherThread, NULL);
