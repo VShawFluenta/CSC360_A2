@@ -74,7 +74,7 @@ void push(customer cust, customerQueue * Q){
        Q->head =0; 
        Q->tail=0; 
        Q->queueArray[0] = cust; 
-        printf("queue was empty\n"); 
+        // printf("queue was empty\n"); 
     } else{
        Q->tail++; 
        Q->tail %=50; 
@@ -180,11 +180,21 @@ long int clerkid = (long int) clerkidVoid;
             customersToProcess --; 
         pthread_mutex_unlock(&globalNumbers); 
             float start = getCurrentSimulationTime(); 
-            printf("I am clerk %ld and I am processing customer %d, starting at time %f, expected service time %.2f seconds\n",clerkid, current.id, start, current.serviceTime/10); 
+            printf("I am clerk %ld and I am processing customer %d, starting at time %f(s), expected service time %.2f seconds\n",clerkid, current.id, start, current.serviceTime/10); 
             usleep(current.serviceTime*100000);
             float end = getCurrentSimulationTime(); 
-            printf("Clerk %ld finished with customer %d, started at  %.2f and finished at %.2f\n",clerkid, current.id, start, end); 
+            float wait = end - current.arrivalTime/10; 
+            printf("Clerk %ld finished with customer %d, started at  %.2f(s) and finished at %.2f(s). Wait time was %.3f(s)\n",clerkid, current.id, start, end, wait); 
+            pthread_mutex_lock(&globalNumbers); 
+            if(current.business){
+                sumBusinessWait += wait; 
+                printf("The new sum of business wait times is %f\n", sumBusinessWait);
+            }else {
+                sumEconomyWait += wait; 
+                printf("The new sum of economy wait times is %f\n", sumEconomyWait);
 
+            }
+            pthread_mutex_unlock(&globalNumbers);             
         }
 
 
@@ -237,7 +247,7 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
     fgets(line, 20 , inputfile); //can also use stdin instead of open_file
     N = atoi(line); 
     customersToProcess =N; 
-    printf("N is %d\n", N); 
+    // printf("N is %d\n", N); 
 
     while( fgets(line, 20, inputfile)!=NULL){
         char cID[20]; 
@@ -247,7 +257,7 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
         int IdxA =0;
         char cServiceTime[20]; 
         int IdxS =0; 
-        printf("line is [%s]\n", line ); 
+        // printf("line is [%s]\n", line ); 
         //for(int i =0; i < 20; i++){
         int i =0; 
             while(line[i] != ':'){
@@ -297,14 +307,14 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
             printf("Failed to create customer %d\n",c);
         }
        // printf("made customer %d\n", c); 
-       printf("Just loaded customer with "); 
-        printCust(ArrayOfCust[c]); 
+    //    printf("Just loaded customer with "); 
+        // printCust(ArrayOfCust[c]); 
         c ++; 
     }
 
     //for()
     //sortCustomers(EndArray, rawCust, N);
-    printf("done loading customers\n"); 
+    printf("done loading customers from file\n"); 
     // for(int i =0; i < N; i ++){
     //     printCust(ArrayOfCust[i]); 
     // }
@@ -356,14 +366,14 @@ void * dispatcher(){
                 printf("Customer %d entered the economy queue at %f, the current length is %d\n", ArrayOfCust[i]->id, getCurrentSimulationTime(),economyQ.quantity);
                 // pthread_mutex_unlock(&econStats);
                 pthread_cond_signal(&condQueue);
-                printf("finished signaling that a customer was added\n"); 
+                // printf("finished signaling that a customer was added\n"); 
                 i++;
             }
        pthread_mutex_unlock(&queue);
 
         }else{
             // printf("there are no customers ready to enter the queue yet, "); 
-           float remainingTime = (float)ArrayOfCust[i]->arrivalTime;
+        //    float remainingTime = (float)ArrayOfCust[i]->arrivalTime;
             // printf("The next customer will arrive in %f seconds and is ", (remainingTime-getCurrentSimulationTime())/10);
             
             // printCust(ArrayOfCust[i]); 
@@ -373,13 +383,12 @@ void * dispatcher(){
         }
         
     }
-    printf("\n\nThere are no more customers to process\n\n\n"); 
+    printf("\n\nThere are no more customers to enter either queue\n\n\n"); 
    return NULL; 
 }
 
 int main(int argc, char ** argv){
-    double sumBusinessWait=0; 
-    double sumEconomyWait =0; 
+
     pthread_t threadArray[5]; 
     pthread_t dispatcherThread; 
     economyQ.quantity = 0; 
@@ -446,15 +455,15 @@ int main(int argc, char ** argv){
     		pthread_join(dispatcherThread, NULL);
 
 
-    printf("The average waiting time for all customers in the system is: %.2f seconds. \n", (sumBusinessWait+sumEconomyWait)/N);
+    printf("The average waiting time for all customers in the system is: %.2f seconds. \n", (sumBusinessWait+sumEconomyWait)/(float)N);
     if(BCustomers !=0){
-    printf("The average waiting time for Business customers in the system is: %.2f seconds. \n", (sumBusinessWait)/BCustomers);
+    printf("The average waiting time for Business customers in the system is: %.2f seconds, and the total business wait time was %.2f. \n", ((sumBusinessWait)/(float)BCustomers), sumBusinessWait);
     } else{
         printf("There were no Business customers\n"); 
     }
 
     if(ECustomers !=0){
-    printf("The average waiting time for Economy customers in the system is: %.2f seconds. \n", (sumEconomyWait)/ECustomers);
+    printf("The average waiting time for Economy customers in the system is: %.2f seconds, and the total wait time was: %.2f\n", ((sumEconomyWait)/(float)ECustomers), sumEconomyWait);
     } else{
         printf("There were no Economy customers\n"); 
     }
