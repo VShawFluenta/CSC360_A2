@@ -180,7 +180,7 @@ long int clerkid = (long int) clerkidVoid;
             customersToProcess --; 
         pthread_mutex_unlock(&globalNumbers); 
             float start = getCurrentSimulationTime(); 
-            printf("I am clerk %ld and I am processing customer %d, starting at time %f(s), expected service time %.2f seconds\n",clerkid, current.id, start, current.serviceTime/10); 
+            printf("I am clerk %ld and I am processing customer %d, starting at time %f(s), expected service time %.0f seconds\n",clerkid, current.id, start, current.serviceTime/10); 
             usleep(current.serviceTime*100000);
             float end = getCurrentSimulationTime(); 
             float wait = start-current.arrivalTime/10; 
@@ -202,7 +202,7 @@ long int clerkid = (long int) clerkidVoid;
         //pthread_mutex_lock(&globalNumbers);
         i ++; 
     }
-    printf("DONE CLERK FUNCTION %ld\n", clerkid); 
+    printf("I am clerk %ld and there will be no more customers today. I am done and I will wait for my co-workers to finish with their clients\n", clerkid); 
                     pthread_cond_signal(&condQueue);
 
     return NULL;
@@ -242,13 +242,13 @@ void printCust(customer * cust){
 
 int loadCustomers(FILE * inputfile){//don't forget to check for invalid times 
 //int loadCustomers(FILE * inputfile){//don't forget to check for invalid times 
-    int N = 0; 
+   // int N = 0; 
     int c =0; 
    // customer rawCust[N];
     char line[20];
     fgets(line, 20 , inputfile); //can also use stdin instead of open_file
-    N = atoi(line); 
-    customersToProcess =N; 
+    //N = atoi(line); 
+   
     // printf("N is %d\n", N); 
 
     while( fgets(line, 20, inputfile)!=NULL){
@@ -335,7 +335,8 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
     // for(int i =0; i < N; i ++){
     //     printCust(ArrayOfCust[i]); 
     // }
-    return N; 
+     customersToProcess =c; 
+    return c; 
 }
 
 void * dispatcher(){
@@ -346,7 +347,7 @@ void * dispatcher(){
     //customer ** ArrayOfCust = (customer **)voidArray; 
     //rawQueue++; 
     int N = customersToProcess; 
-    printf("Airline is opening, starting dispatch, there will be %d customers today\n", N); 
+    printf("Airline is opening, all clerks are ready, customers will now start arriving, there will be %d customers today\n", N); 
     int i = 0; 
                // printCust(ArrayOfCust[2]);
 
