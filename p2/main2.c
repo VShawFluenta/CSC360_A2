@@ -10,7 +10,23 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <math.h>
-#include "Queue.h"
+//#include "Queue.h"
+
+typedef struct customer{
+	int id;
+	int business; 
+	float arrivalTime;
+	float serviceTime; 
+	float waitTime; 
+   // struct customer *next; 
+}customer;
+
+typedef struct customerQueue{
+	int head; 
+	int tail; 
+	int quantity; 
+    customer queueArray[50]; 
+}customerQueue;
 
 int customersToProcess =0; 
 double sumBusinessWait=0; 
@@ -39,33 +55,73 @@ pthread_mutex_t globalNumbers;
 
 
 
+customer  pop(customerQueue * Q ){
+    customer top = Q->queueArray[Q->head]; 
+    Q->head ++; 
+    Q->quantity --; 
+    return top; 
+}
 
+customer  peek(customerQueue* Q){
+    customer top = Q->queueArray[Q->head]; 
+    return top; 
+}
 
-// customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
-//     printf("making customer\n"); 
-//     customer * newCustomer = malloc(sizeof(customer));
-//      if (newCustomer == NULL) {
-//         printf("Memory allocation failed\n");
-//         return NULL;  // Handle memory allocation failure
-//     }else{
-//         printf("sucessfully allocated space for new customer\n"); 
-//     }
-//     newCustomer-> id = id; 
-//     printf("made the id\n"); 
-//     newCustomer -> business = business; 
-//         printf("made the business\n"); 
-//     newCustomer -> serviceTime = serviceTime; 
-//             printf("made the service time\n"); 
+void push(customer cust, customerQueue * Q){
+//        printf("the starting quantity is %d\n", Q->quantity); 
 
-//     newCustomer -> arrivalTime= arrivalTime; 
-//         printf("made the arrival time\n"); 
-//    // printf("whyyyyyyyyy\n");
+    if(Q->quantity==0){
+       Q->head =0; 
+       Q->tail=0; 
+       Q->queueArray[0] = cust; 
+        printf("queue was empty\n"); 
+    } else{
+       Q->tail++; 
+       Q->tail %=50; 
+        Q->queueArray[Q->tail] = cust;
+
+    }
+    Q->quantity ++; 
+        printf("pushing customer %i, Arrival time is %.4f, and service time is %.4f\n", Q->queueArray[Q->tail].id, Q->queueArray[Q->tail].arrivalTime, Q->queueArray[Q->tail].serviceTime); 
+
+   // printf("the current quantity is %d\n", Q->quantity); 
+
+}
+
+customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
+   // printf("making customer\n"); 
+    customer * newCustomer = malloc(sizeof(customer));
+     if (newCustomer == NULL) {
+        printf("Memory allocation failed\n");
+        return NULL;  // Handle memory allocation failure
+    }else{
+     //   printf("sucessfully allocated space for new customer\n"); 
+    }
+    newCustomer-> id = id; 
+   // printf("made the id\n"); 
+    newCustomer -> business = business; 
+   //     printf("made the business\n"); 
+    newCustomer -> serviceTime = serviceTime; 
+    //        printf("made the service time\n"); 
+
+    newCustomer -> arrivalTime= arrivalTime; 
+    //    printf("made the arrival time\n"); 
+   // printf("whyyyyyyyyy\n");
 
   
-//     printf("finished making new customer\n"); 
-//   //  printf("nooooooooo\n"); 
-//     return newCustomer; 
-// }
+    //printf("finished making new customer\n"); 
+  //  printf("nooooooooo\n"); 
+    return newCustomer; 
+}
+
+void initArray(customerQueue *Q, int N){
+    for(int i =0; i < N; i ++){
+        Q->queueArray[i].arrivalTime=-333; 
+        Q->queueArray[i].serviceTime=-333; 
+        Q->queueArray[i].id=-333; 
+
+    }
+}
 
 
 //MUST IMPLEMENT!!!!!!
@@ -102,14 +158,14 @@ long int clerkid = (long int) clerkidVoid;
         // pthread_mutex_lock(&econStats);
         if(businessQ.quantity >=1){
            // printf("There are %d customers in Business Queue\n", businessQ.quantity); 
-             current = *pop(&businessQ); 
+             current = pop(&businessQ); 
              found =1; 
              BCustomers++; 
             // pthread_mutex_unlock(&businessStats);
         }else if (economyQ.quantity >=1){
             //printf("There are %d customers in economy Queue\n", economyQ.quantity); 
 
-             current = *pop(&economyQ); 
+             current = pop(&economyQ); 
              found =1;
              ECustomers++; 
         } else{
@@ -172,8 +228,8 @@ void printCust(customer * cust){
 }
 
 
-//int loadCustomers(FILE * inputfile, customer ** EndArray){//don't forget to check for invalid times 
-int loadCustomers(FILE * inputfile){//don't forget to check for invalid times 
+int loadCustomers(FILE * inputfile, customer ** ArrayOfCust){//don't forget to check for invalid times 
+//int loadCustomers(FILE * inputfile){//don't forget to check for invalid times 
     int N = 0; 
     int c =0; 
    // customer rawCust[N];
@@ -248,73 +304,74 @@ int loadCustomers(FILE * inputfile){//don't forget to check for invalid times
 
     //for()
     //sortCustomers(EndArray, rawCust, N);
+    printf("done loading customers\n"); 
     return N; 
 }
 
 void * dispatcher(){
 //void *dispatcher(void * voidArray){
-//void dispatcher(customer * rawQueue[]){
+//void dispatcher(customer * ArrayOfCust[]){
     //customer * rawQueue[50] = (customer **)voidArray;
 
-    //customer ** rawQueue = (customer **)voidArray; 
+    //customer ** ArrayOfCust = (customer **)voidArray; 
     //rawQueue++; 
     int N = customersToProcess; 
     printf("starting dispatch, there are %d customers\n", N); 
     int i = 0; 
-                printCust(ArrayOfCust[2]);
+               // printCust(ArrayOfCust[2]);
 
     while(i<N){
 //printf("getting time mutex, there are %d customers left in the array, current time is %.2f\n", N-i, getCurrentSimulationTime()); 
-               printCust(ArrayOfCust[2]);
+              // printCust(ArrayOfCust[2]);
 
-        pthread_mutex_lock(&timeMutex);
+        // pthread_mutex_lock(&timeMutex);
        // printf("got time mutex\n"); 
 
-        printCust(ArrayOfCust[2]);
-        int currentTime = getCurrentSimulationTime(); 
+       // printCust(ArrayOfCust[2]);
+      //  int currentTime = getCurrentSimulationTime(); 
 
-       // printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
-        if(currentTime>=ArrayOfCust[i]->arrivalTime/10){
-            printf("Found a customer %d who is ready at index %d\n", ArrayOfCust[i]->id, i); 
+       //printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
+        if(getCurrentSimulationTime()>=ArrayOfCust[i]->arrivalTime/10){
+            printf("Found a customer with id %d who is ready at index %d\n", ArrayOfCust[i]->id, i); 
             
             // pthread_mutex_lock(&businessStats);
             // printf("Got business Stats mutex\n"); 
 
             if(ArrayOfCust[i]-> business==1){
-                pthread_mutex_lock(&businessStats);
-                push(ArrayOfCust[i], &businessQ); 
+                // pthread_mutex_lock(&businessStats);
+                push(*ArrayOfCust[i], &businessQ); 
                 printf("Customer %d entered the business queue, the current length is %d\n", ArrayOfCust[i]->id, businessQ.quantity);
                 
-                pthread_mutex_unlock(&businessStats);
-                pthread_cond_signal(&condQueue);
+                // pthread_mutex_unlock(&businessStats);
+                 pthread_cond_signal(&condQueue);
                 i++;
                 //printf("finished signaling that a customer was added\n"); 
 
             }else{
-                pthread_mutex_lock(&econStats);
-                push(ArrayOfCust[i], &economyQ); 
+                // pthread_mutex_lock(&econStats);
+                push(*ArrayOfCust[i], &economyQ); 
                 printf("Customer %d entered the economy queue, the current length is %d\n", ArrayOfCust[i]->id, economyQ.quantity);
-                pthread_mutex_unlock(&econStats);
+                // pthread_mutex_unlock(&econStats);
                 pthread_cond_signal(&condQueue);
                 printf("finished signaling that a customer was added\n"); 
                 i++;
             }
-        pthread_mutex_unlock(&timeMutex);
+       // pthread_mutex_unlock(&timeMutex);
 
         }else{
-           // printf("there are no customers ready to enter the queue yet, "); 
+            printf("there are no customers ready to enter the queue yet, "); 
            float remainingTime = (float)ArrayOfCust[i]->arrivalTime;
-            //printf("The next customer will arrive in %f seconds and is ", (remainingTime-currentTime)/10);
+            printf("The next customer will arrive in %f seconds and is ", (remainingTime-getCurrentSimulationTime())/10);
             
             printCust(ArrayOfCust[i]); 
-            pthread_mutex_unlock(&timeMutex);
+           // pthread_mutex_unlock(&timeMutex);
             usleep(5000); 
-            printCust(ArrayOfCust[i]); 
+           // printCust(ArrayOfCust[i]); 
         }
         
     }
     printf("\n\nThere are no more customers to process\n\n\n"); 
-    return NULL; 
+   return NULL; 
 }
 
 int main(int argc, char ** argv){
@@ -327,8 +384,8 @@ int main(int argc, char ** argv){
     pthread_cond_init(&condQueue, NULL); 
     pthread_mutex_init(&queue, NULL); 
         pthread_mutex_init(&timeMutex, NULL); 
+    customer * ArrayOfCust[50];
     
-
     
     
 
@@ -347,8 +404,12 @@ int main(int argc, char ** argv){
         printf("opened file\n"); 
     }
     // customer * ArrayOfCust[50];
-    int N = loadCustomers(inputfile); 
+    int N = loadCustomers(inputfile, ArrayOfCust); 
+    initArray(&businessQ, N); 
+    initArray(&economyQ, N); 
+    printf("Done initializing arrays\n");
   int rc; 
+    gettimeofday(&start_time, NULL); // record simulation start time
 
     for(long int i =0; i < 1; i ++){
         if ((rc = pthread_create(&threadArray[i], NULL, clerk, (void* )i))) {
@@ -356,14 +417,13 @@ int main(int argc, char ** argv){
 			return EXIT_FAILURE;
 		}
     }
-    if ((rc = pthread_create(&dispatcherThread, NULL, dispatcher, (void *) ArrayOfCust ))) {
+    if ((rc = pthread_create(&dispatcherThread, NULL, dispatcher, NULL ))) {
 			fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
 			return EXIT_FAILURE;
 		}
 
 
-    gettimeofday(&start_time, NULL); // record simulation start time
-   // dispatcher();
+   // dispatcher(ArrayOfCust);
    // clerk();
 
 
