@@ -181,7 +181,7 @@ long int clerkid = (long int) clerkidVoid;
         //pthread_mutex_lock(&globalNumbers);
         i ++; 
     }
-    printf("DONE CLERK FUNTION\n"); 
+    printf("DONE CLERK FUNCTION\n"); 
     return NULL;
 }
 int StringToInt(char * line){//NOT NEEDED ANYMORE!!
@@ -306,55 +306,55 @@ void dispatcher(customer * ArrayOfCust[]){
     int N = customersToProcess; 
     printf("starting dispatch, there are %d customers\n", N); 
     int i = 0; 
-                printCust(ArrayOfCust[2]);
+               // printCust(ArrayOfCust[2]);
 
     while(i<N){
 //printf("getting time mutex, there are %d customers left in the array, current time is %.2f\n", N-i, getCurrentSimulationTime()); 
-               printCust(ArrayOfCust[2]);
+              // printCust(ArrayOfCust[2]);
 
-        pthread_mutex_lock(&timeMutex);
+        // pthread_mutex_lock(&timeMutex);
        // printf("got time mutex\n"); 
 
-        printCust(ArrayOfCust[2]);
-        int currentTime = getCurrentSimulationTime(); 
+       // printCust(ArrayOfCust[2]);
+      //  int currentTime = getCurrentSimulationTime(); 
 
-       // printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
-        if(currentTime>=ArrayOfCust[i]->arrivalTime/10){
-            printf("Found a customer %d who is ready at index %d\n", ArrayOfCust[i]->id, i); 
+       //printf("get current simulation time is %f\n", getCurrentSimulationTime()); 
+        if(getCurrentSimulationTime()>=ArrayOfCust[i]->arrivalTime/10){
+            printf("Found a customer with id %d who is ready at index %d\n", ArrayOfCust[i]->id, i); 
             
             // pthread_mutex_lock(&businessStats);
             // printf("Got business Stats mutex\n"); 
 
             if(ArrayOfCust[i]-> business==1){
-                pthread_mutex_lock(&businessStats);
+                // pthread_mutex_lock(&businessStats);
                 push(ArrayOfCust[i], &businessQ); 
                 printf("Customer %d entered the business queue, the current length is %d\n", ArrayOfCust[i]->id, businessQ.quantity);
                 
-                pthread_mutex_unlock(&businessStats);
-                pthread_cond_signal(&condQueue);
+                // pthread_mutex_unlock(&businessStats);
+                 pthread_cond_signal(&condQueue);
                 i++;
                 //printf("finished signaling that a customer was added\n"); 
 
             }else{
-                pthread_mutex_lock(&econStats);
+                // pthread_mutex_lock(&econStats);
                 push(ArrayOfCust[i], &economyQ); 
                 printf("Customer %d entered the economy queue, the current length is %d\n", ArrayOfCust[i]->id, economyQ.quantity);
-                pthread_mutex_unlock(&econStats);
+                // pthread_mutex_unlock(&econStats);
                 pthread_cond_signal(&condQueue);
                 printf("finished signaling that a customer was added\n"); 
                 i++;
             }
-        pthread_mutex_unlock(&timeMutex);
+       // pthread_mutex_unlock(&timeMutex);
 
         }else{
-           // printf("there are no customers ready to enter the queue yet, "); 
+            printf("there are no customers ready to enter the queue yet, the time is %s ", getCurrentSimulationTime()); 
            float remainingTime = (float)ArrayOfCust[i]->arrivalTime;
-            //printf("The next customer will arrive in %f seconds and is ", (remainingTime-currentTime)/10);
+            printf("The next customer will arrive in %f seconds and is ", (remainingTime-getCurrentSimulationTime())/10);
             
             printCust(ArrayOfCust[i]); 
-            pthread_mutex_unlock(&timeMutex);
+           // pthread_mutex_unlock(&timeMutex);
             usleep(5000); 
-            printCust(ArrayOfCust[i]); 
+           // printCust(ArrayOfCust[i]); 
         }
         
     }
@@ -363,8 +363,7 @@ void dispatcher(customer * ArrayOfCust[]){
 }
 
 int main(int argc, char ** argv){
-    double sumBusinessWait=0; 
-    double sumEconomyWait =0; 
+ 
     pthread_t threadArray[5]; 
     pthread_t dispatcherThread; 
     economyQ.quantity = 0; 

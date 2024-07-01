@@ -497,8 +497,8 @@ void * dispatcher(){
 
 int main(int argc, char ** argv){
 
-    pthread_t threadArray[5]; 
-    pthread_t dispatcherThread; 
+    pthread_t threadArray[5]; //Array of clerk threads
+    pthread_t dispatcherThread; //This thread releases customers to the queues when they "arrive"
     economyQ.quantity = 0; 
     businessQ.quantity = 0;  
     pthread_cond_init(&condQueue, NULL); 
@@ -524,12 +524,16 @@ int main(int argc, char ** argv){
         printf("opened file\n"); 
     }
     // customer * ArrayOfCust[50];
-    int N = loadCustomers(inputfile); 
+    int N = loadCustomers(inputfile); //Reads the files from the file and checks the validity. Does not sort
+    if(N ==0){
+        printf("No valid customers could be found in %s, please provide valid input\n", fname); 
+        return 1; 
+    }
     initArray(&businessQ, N); 
     initArray(&economyQ, N); 
     printf("Done initializing arrays\n");
-  int rc; 
-  sortCustomers(N);
+    int rc; 
+    sortCustomers(N); //In place sorting of the customers read from the file in case they were unordered
     gettimeofday(&start_time, NULL); // record simulation start time
 
     for(long int i =0; i < 5; i ++){

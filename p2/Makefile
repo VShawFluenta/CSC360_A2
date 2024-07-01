@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-I -g -Wall
 LDFLAGS=-pthread
 OBJECTS = main2.o
-TARGET = ASC
+TARGET = ACS
 
 all: $(TARGET)
 
@@ -11,3 +11,4 @@ $(TARGET): $(OBJECTS)
 
 clean:
 	rm $(TARGET) *.o
+	rm main2.o
