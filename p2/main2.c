@@ -501,8 +501,11 @@ int main(int argc, char ** argv){
     pthread_t dispatcherThread; //This thread releases customers to the queues when they "arrive"
     economyQ.quantity = 0; 
     businessQ.quantity = 0;  
-    pthread_cond_init(&condQueue, NULL); 
-    pthread_mutex_init(&queue, NULL); 
+    if(pthread_cond_init(&condQueue, NULL)==0 ||pthread_mutex_init(&queue, NULL)==0 ){
+        printf("Error in creading condition variable or mutex, ending early\n"); //COULD USE ERRNO HERE
+        return 1; 
+    } 
+    
         // pthread_mutex_init(&timeMutex, NULL); 
     //customer * ArrayOfCust[50];
     
@@ -519,7 +522,7 @@ int main(int argc, char ** argv){
     inputfile=fopen(fname,"r");
     if(inputfile == NULL){
         printf("file %s failed to open\n", fname); 
-        return 1; 
+        return EXIT_FAILURE; 
     }else{
         printf("opened file\n"); 
     }
@@ -527,7 +530,7 @@ int main(int argc, char ** argv){
     int N = loadCustomers(inputfile); //Reads the files from the file and checks the validity. Does not sort
     if(N ==0){
         printf("No valid customers could be found in %s, please provide valid input\n", fname); 
-        return 1; 
+        return EXIT_FAILURE; 
     }
     initArray(&businessQ, N); 
     initArray(&economyQ, N); 
@@ -580,8 +583,10 @@ int main(int argc, char ** argv){
     } else{
         printf("There were no Economy customers\n"); 
     }
-    pthread_cond_destroy(&condQueue); 
-    pthread_mutex_destroy(&queue); 
-        pthread_mutex_destroy(&timeMutex); 
+
+    if(pthread_cond_destroy(&condQueue) ==0 ||    pthread_mutex_destroy(&queue) ==0|| pthread_mutex_destroy(&globalNumbers) ==0){
+        printf("There was an error in destroying the condition variable, or either of the mutexes\n");
+    }
+         
 
 }
