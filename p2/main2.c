@@ -12,6 +12,7 @@
 #include <math.h>
 #include "Queue.h"
 
+//These are here as a reminder, they are properly declared in the .h file. 
 // typedef struct customer{
 // 	int id;
 // 	int business; 
@@ -28,9 +29,9 @@
 //     customer queueArray[50]; 
 // }customerQueue;
 
-int customersToProcess =0; 
-double sumBusinessWait=0; 
-int BCustomers =0; 
+int customersToProcess =0; //Customers remaining in the queues or in the array to be put into the queues
+double sumBusinessWait=0; //Sum of all the wait times, 
+int BCustomers =0; //number of business and econ customers respectively 
 int ECustomers =0; 
 double sumEconomyWait =0; 
 customer * ArrayOfCust[50];
@@ -45,9 +46,9 @@ customerQueue economyQ;
 
 
 //Make a time calc mutex here
-pthread_mutex_t timeMutex; 
-pthread_mutex_t businessStats; 
-pthread_mutex_t econStats;
+// pthread_mutex_t timeMutex;  //These three are not needed. 
+// pthread_mutex_t businessStats; 
+// pthread_mutex_t econStats;
 pthread_mutex_t queue; 
 pthread_cond_t condQueue; 
 pthread_mutex_t globalNumbers; 
@@ -62,7 +63,7 @@ pthread_mutex_t globalNumbers;
 
 
 
-
+//Used to initialize the customers in the arrays of customer pointers within each queue. -333 would not be a valid entry, so if it is printed then I know I have an error
 void initArray(customerQueue *Q, int N){
     for(int i =0; i < N; i ++){
         Q->queueArray[i].arrivalTime=-333; 
@@ -72,67 +73,70 @@ void initArray(customerQueue *Q, int N){
     }
 }
 
-// Merges two subarrays of arr[].
-// First subarray is arr[l..m]
-// Second subarray is arr[m+1..r]
-// Inplace Implementation
-void merge(customer * arr[], int start, int mid, int end){
-	int start2 = mid + 1;
+// // Merges two subarrays of arr[].
+// // First subarray is arr[l..m]
+// // Second subarray is arr[m+1..r]
+// // Inplace Implementation
+// void merge(customer * arr[], int start, int mid, int end){
+// 	int start2 = mid + 1;
 
-	// If the direct merge is already sorted
-	if (arr[mid]->arrivalTime <= arr[start2]->arrivalTime) {
-		return;
-	}
+// 	// If the direct merge is already sorted
+// 	if (arr[mid]->arrivalTime <= arr[start2]->arrivalTime) {
+// 		return;
+// 	}
 
-	// Two pointers to maintain start
-	// of both arrays to merge
-	while (start <= mid && start2 <= end) {
+// 	// Two pointers to maintain start
+// 	// of both arrays to merge
+// 	while (start <= mid && start2 <= end) {
 
-		// If element 1 is in right place
-		if (arr[start]->arrivalTime <= arr[start2]->arrivalTime ) {
-			start++;
-		}
-		else {
-			int value = arr[start2]->arrivalTime ;
-			int index = start2;
+// 		// If element 1 is in right place
+// 		if (arr[start]->arrivalTime <= arr[start2]->arrivalTime ) {
+// 			start++;
+// 		}
+// 		else {
+// 			int value = arr[start2]->arrivalTime ;
+// 			int index = start2;
 
-			// Shift all the elements between element 1
-			// element 2, right by 1.
-			while (index != start) {
-				arr[index]->arrivalTime  = arr[index - 1]->arrivalTime ;
-				index--;
-			}
-			arr[start]->arrivalTime  = value;
+// 			// Shift all the elements between element 1
+// 			// element 2, right by 1.
+// 			while (index != start) {
+// 				arr[index]->arrivalTime  = arr[index - 1]->arrivalTime ;
+// 				index--;
+// 			}
+// 			arr[start]->arrivalTime  = value;
 
-			// Update all the pointers
-			start++;
-			mid++;
-			start2++;
-		}
-	}
-}
+// 			// Update all the pointers
+// 			start++;
+// 			mid++;
+// 			start2++;
+// 		}
+// 	}
+// }
 
 
-/* l is for left index and r is right index of the
-sub-array of arr to be sorted */
-void mergeSort(customer * arr[], int l, int r)
-{
-	if (l < r) {
+// /* l is for left index and r is right index of the
+// sub-array of arr to be sorted */
+// void mergeSort(customer * arr[], int l, int r)
+// {
+// 	if (l < r) {
 
-		// Same as (l + r) / 2, but avoids overflow
-		// for large l and r
-		int m = l + (r - l) / 2;
+// 		// Same as (l + r) / 2, but avoids overflow
+// 		// for large l and r
+// 		int m = l + (r - l) / 2;
 
-		// Sort first and second halves
-		mergeSort(arr, l, m);
-		mergeSort(arr, m + 1, r);
+// 		// Sort first and second halves
+// 		mergeSort(arr, l, m);
+// 		mergeSort(arr, m + 1, r);
 
-		merge(arr, l, m, r);
-	}
-}
+// 		merge(arr, l, m, r);
+// 	}
+// }
 
 //MUST IMPLEMENT!!!!!! Implemented with array based merge sort. 
 //Credit to Geeks for Geeks for basis of this code https://www.geeksforgeeks.org/in-place-merge-sort/
+//Merge sort not used, but kept so I can tinker with it to get it working. 
+
+
 void sortCustomers( int N){
 //mergeSort(ArrayOfCust, 0, N);
 //Very basic insertion sort of my own since merge sort isn't working
@@ -142,7 +146,7 @@ for(int i =0; i < N; i ++){
    minStart = ArrayOfCust[i]->arrivalTime;
    minIdx = i; 
     for (int j =i; j < N; j ++){
-        if(ArrayOfCust[j]->arrivalTime< minStart){
+        if(ArrayOfCust[j]->arrivalTime< minStart){//if found a customer that arrives before current "min" save that
             minStart = ArrayOfCust[j]-> arrivalTime; 
             minIdx =j; 
         }
@@ -167,7 +171,7 @@ for(int i =0; i < N; i ++){
 
 
 
-
+//This function gets the current time in seconds based on a start time listed in global scope
 double getCurrentSimulationTime(){
 	
 	struct timeval cur_time;
@@ -183,7 +187,10 @@ double getCurrentSimulationTime(){
 	return cur_secs - init_secs;
 }  
 
-void *clerk(void * clerkidVoid){//NEED TO PASS IT THE ID OF THE CLERK. 
+
+//This function (run as a thread only) takes the next customer (prioritizing business)
+//and "processes" them before returning back to the queues to get the next.
+void *clerk(void * clerkidVoid){
 long int clerkid = (long int) clerkidVoid; 
     pthread_mutex_lock(&globalNumbers);
     int i =0; 
@@ -195,13 +202,13 @@ long int clerkid = (long int) clerkidVoid;
         int found =0; 
         // pthread_mutex_lock(&businessStats); 
         // pthread_mutex_lock(&econStats);
-        if(businessQ.quantity >=1){
+        if(businessQ.quantity >=1){//If there are customers to service, then help them 
            // printf("There are %d customers in Business Queue\n", businessQ.quantity); 
              current = pop(&businessQ); 
              found =1; 
              BCustomers++; 
             // pthread_mutex_unlock(&businessStats);
-        }else if (economyQ.quantity >=1){
+        }else if (economyQ.quantity >=1){//If there are customers to service, then help them 
             //printf("There are %d customers in economy Queue\n", economyQ.quantity); 
 
              current = pop(&economyQ); 
@@ -220,7 +227,7 @@ long int clerkid = (long int) clerkidVoid;
         pthread_mutex_unlock(&globalNumbers); 
             float start = getCurrentSimulationTime(); 
             printf("I am clerk %ld and I am processing customer %d, starting at time %f(s), expected service time %.0f seconds\n",clerkid, current.id, start, current.serviceTime/10); 
-            usleep(current.serviceTime*100000);
+            usleep(current.serviceTime*100000);//sleep for service time in seconds 
             float end = getCurrentSimulationTime(); 
             float wait = start-current.arrivalTime/10; 
             printf("Clerk %ld finished with customer %d, started at  %.2f(s) and finished at %.2f(s). Wait time was %.3f(s)\n",clerkid, current.id, start, end, wait); 
@@ -413,7 +420,7 @@ void * dispatcher(){
                 push(ArrayOfCust[i], &businessQ); 
                 printf("Customer %d entered the business queue at %f(s), the current queue length is %d\n", ArrayOfCust[i]->id,getCurrentSimulationTime(), businessQ.quantity);
                 
-                pthread_mutex_unlock(&businessStats);
+               // pthread_mutex_unlock(&businessStats);
                 pthread_cond_signal(&condQueue);
                 i++;
                 //printf("finished signaling that a customer was added\n"); 

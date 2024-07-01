@@ -12,19 +12,20 @@
 // }customer;
 
 
-
+//Return the top customer and remove it from the queue
 customer  pop(customerQueue * Q ){
     customer top = Q->queueArray[Q->head]; 
     Q->head ++; 
     Q->quantity --; 
     return top; 
 }
-
+//return the top customer 
 customer  peek(customerQueue* Q){
     customer top = Q->queueArray[Q->head]; 
     return top; 
 }
 
+//add a customer to the back of the queue
 void push(customer *cust, customerQueue * Q){
 //        printf("the starting quantity is %d\n", Q->quantity); 
 
@@ -45,6 +46,8 @@ void push(customer *cust, customerQueue * Q){
    // printf("the current quantity is %d\n", Q->quantity); 
 
 }
+
+//create a customer based on given values and return a pointer to it
 customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
    // printf("making customer\n"); 
     customer * newCustomer = malloc(sizeof(customer));
