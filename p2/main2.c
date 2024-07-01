@@ -10,23 +10,23 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <math.h>
-//#include "Queue.h"
+#include "Queue.h"
 
-typedef struct customer{
-	int id;
-	int business; 
-	float arrivalTime;
-	float serviceTime; 
-	float waitTime; 
-   // struct customer *next; 
-}customer;
+// typedef struct customer{
+// 	int id;
+// 	int business; 
+// 	float arrivalTime;
+// 	float serviceTime; 
+// 	float waitTime; 
+//    // struct customer *next; 
+// }customer;
 
-typedef struct customerQueue{
-	int head; 
-	int tail; 
-	int quantity; 
-    customer queueArray[50]; 
-}customerQueue;
+// typedef struct customerQueue{
+// 	int head; 
+// 	int tail; 
+// 	int quantity; 
+//     customer queueArray[50]; 
+// }customerQueue;
 
 int customersToProcess =0; 
 double sumBusinessWait=0; 
@@ -55,64 +55,13 @@ pthread_mutex_t globalNumbers;
 
 
 
-customer  pop(customerQueue * Q ){
-    customer top = Q->queueArray[Q->head]; 
-    Q->head ++; 
-    Q->quantity --; 
-    return top; 
-}
 
-customer  peek(customerQueue* Q){
-    customer top = Q->queueArray[Q->head]; 
-    return top; 
-}
 
-void push(customer cust, customerQueue * Q){
-//        printf("the starting quantity is %d\n", Q->quantity); 
 
-    if(Q->quantity==0){
-       Q->head =0; 
-       Q->tail=0; 
-       Q->queueArray[0] = cust; 
-        // printf("queue was empty\n"); 
-    } else{
-       Q->tail++; 
-       Q->tail %=50; 
-        Q->queueArray[Q->tail] = cust;
 
-    }
-    Q->quantity ++; 
-        // printf("pushing customer %i, Arrival time is %.4f, and service time is %.4f\n", Q->queueArray[Q->tail].id, Q->queueArray[Q->tail].arrivalTime, Q->queueArray[Q->tail].serviceTime); 
 
-   // printf("the current quantity is %d\n", Q->quantity); 
 
-}
 
-customer * makeCustomer(int id, int business, int arrivalTime, int serviceTime){
-   // printf("making customer\n"); 
-    customer * newCustomer = malloc(sizeof(customer));
-     if (newCustomer == NULL) {
-        printf("Memory allocation failed\n");
-        return NULL;  // Handle memory allocation failure
-    }else{
-     //   printf("sucessfully allocated space for new customer\n"); 
-    }
-    newCustomer-> id = id; 
-   // printf("made the id\n"); 
-    newCustomer -> business = business; 
-   //     printf("made the business\n"); 
-    newCustomer -> serviceTime = serviceTime; 
-    //        printf("made the service time\n"); 
-
-    newCustomer -> arrivalTime= arrivalTime; 
-    //    printf("made the arrival time\n"); 
-   // printf("whyyyyyyyyy\n");
-
-  
-    //printf("finished making new customer\n"); 
-  //  printf("nooooooooo\n"); 
-    return newCustomer; 
-}
 
 void initArray(customerQueue *Q, int N){
     for(int i =0; i < N; i ++){
@@ -207,7 +156,7 @@ for(int i =0; i < N; i ++){
     ArrayOfCust[i]= ArrayOfCust[minIdx]; 
     ArrayOfCust[minIdx]= temp; 
     if(i!=minIdx){
-    printf("Swapped customer at index %d for customer at index %d\n", i, minIdx);
+    // printf("Swapped customer at index %d for customer at index %d\n", i, minIdx);
     }
 }
 }
@@ -294,6 +243,7 @@ long int clerkid = (long int) clerkidVoid;
     }
     printf("I am clerk %ld and there will be no more customers today. I am done and I will wait for my co-workers to finish with their clients\n", clerkid); 
                     pthread_cond_signal(&condQueue);
+                    pthread_mutex_unlock(&globalNumbers); 
 
     return NULL;
 }
@@ -460,7 +410,7 @@ void * dispatcher(){
     pthread_mutex_lock(&queue); 
             if(ArrayOfCust[i]-> business==1){
                 // pthread_mutex_lock(&businessStats);
-                push(*ArrayOfCust[i], &businessQ); 
+                push(ArrayOfCust[i], &businessQ); 
                 printf("Customer %d entered the business queue at %f(s), the current queue length is %d\n", ArrayOfCust[i]->id,getCurrentSimulationTime(), businessQ.quantity);
                 
                 pthread_mutex_unlock(&businessStats);
@@ -470,7 +420,7 @@ void * dispatcher(){
 
             }else{
                 // pthread_mutex_lock(&econStats);
-                push(*ArrayOfCust[i], &economyQ); 
+                push(ArrayOfCust[i], &economyQ); 
                 printf("Customer %d entered the economy queue at %f(s), the current queue length is %d\n", ArrayOfCust[i]->id, getCurrentSimulationTime(),economyQ.quantity);
                 // pthread_mutex_unlock(&econStats);
                 pthread_cond_signal(&condQueue);
@@ -501,7 +451,7 @@ int main(int argc, char ** argv){
     pthread_t dispatcherThread; //This thread releases customers to the queues when they "arrive"
     economyQ.quantity = 0; 
     businessQ.quantity = 0;  
-    if(pthread_cond_init(&condQueue, NULL)==0 ||pthread_mutex_init(&queue, NULL)==0 ){
+    if(pthread_cond_init(&condQueue, NULL)!=0 ||pthread_mutex_init(&queue, NULL)!=0 ){
         printf("Error in creading condition variable or mutex, ending early\n"); //COULD USE ERRNO HERE
         return 1; 
     } 
@@ -540,7 +490,7 @@ int main(int argc, char ** argv){
     gettimeofday(&start_time, NULL); // record simulation start time
 
     for(long int i =0; i < 5; i ++){
-        if ((rc = reate(&threadArray[i], NULL, clerk, (void* )i))) {
+        if ((rc = pthread_create(&threadArray[i], NULL, clerk, (void* )i))) {
 			fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
 			return EXIT_FAILURE;
 		}
@@ -571,7 +521,7 @@ int main(int argc, char ** argv){
     		pthread_join(dispatcherThread, NULL);
 
 
-    printf("The average waiting time for all customers in the system is: %.2f seconds. \n", (sumBusinessWait+sumEconomyWait)/(float)N);
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\nThe average waiting time for all customers in the system is: %.2f seconds. \n", (sumBusinessWait+sumEconomyWait)/(float)N);
     if(BCustomers !=0){
     printf("The average waiting time for Business customers in the system is: %.2f seconds, and the total business wait time was %.2f. \n", ((sumBusinessWait)/(float)BCustomers), sumBusinessWait);
     } else{
@@ -582,10 +532,19 @@ int main(int argc, char ** argv){
     printf("The average waiting time for Economy customers in the system is: %.2f seconds, and the total wait time was: %.2f\n", ((sumEconomyWait)/(float)ECustomers), sumEconomyWait);
     } else{
         printf("There were no Economy customers\n"); 
-    }
+    }//||    pthread_mutex_destroy(&queue) !=0|| pthread_mutex_destroy(&globalNumbers) !=0
 
-    if(pthread_cond_destroy(&condQueue) ==0 ||    pthread_mutex_destroy(&queue) ==0|| pthread_mutex_destroy(&globalNumbers) ==0){
-        printf("There was an error in destroying the condition variable, or either of the mutexes\n");
+    if( pthread_cond_destroy(&condQueue) !=0 ){
+        printf("There was an error in destroying the condition variable\n");
+        perror("Error"); 
+    }
+    if( errno = pthread_mutex_destroy(&queue) !=0 ){
+        printf("There was an error in destroying the queue mutex\n");
+        perror("Error"); 
+    }
+     if(errno= pthread_mutex_destroy(&globalNumbers) !=0 ){
+        printf("There was an error in destroying the global numbers mutex\n");
+        perror("Error"); 
     }
          
 
