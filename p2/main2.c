@@ -436,7 +436,7 @@ void * dispatcher(){
             
             // printCust(ArrayOfCust[i]); 
            // pthread_mutex_unlock(&timeMutex);
-            usleep(5000); 
+            // usleep(5000); //This was only so that it would take slightly longer to run and print less statements 
            // printCust(ArrayOfCust[i]); 
         }
         
@@ -542,10 +542,7 @@ int main(int argc, char ** argv){
         printf("There was an error in destroying the queue mutex\n");
         perror("Error"); 
     }
-     if(errno= pthread_mutex_destroy(&globalNumbers) !=0 ){
-        printf("There was an error in destroying the global numbers mutex\n");
-        perror("Error"); 
-    }
+   
          
 
 }
