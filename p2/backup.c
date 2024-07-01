@@ -232,7 +232,7 @@ double getCurrentSimulationTime(){
 	cur_secs = (cur_time.tv_sec + (double) cur_time.tv_usec / 1000000);
 	
 	return cur_secs - init_secs;
-}  
+}
 
 void *clerk(void * clerkidVoid){//NEED TO PASS IT THE ID OF THE CLERK. 
 long int clerkid = (long int) clerkidVoid; 
@@ -503,7 +503,7 @@ int main(int argc, char ** argv){
     businessQ.quantity = 0;  
     pthread_cond_init(&condQueue, NULL); 
     pthread_mutex_init(&queue, NULL); 
-        // pthread_mutex_init(&timeMutex, NULL); 
+        pthread_mutex_init(&timeMutex, NULL); 
     //customer * ArrayOfCust[50];
     
     
@@ -548,7 +548,7 @@ int main(int argc, char ** argv){
    // clerk();
 
 
-
+   
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~ clean up 
     fclose(inputfile); 
