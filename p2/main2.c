@@ -540,7 +540,7 @@ int main(int argc, char ** argv){
     gettimeofday(&start_time, NULL); // record simulation start time
 
     for(long int i =0; i < 5; i ++){
-        if ((rc = pthread_create(&threadArray[i], NULL, clerk, (void* )i))) {
+        if ((rc = reate(&threadArray[i], NULL, clerk, (void* )i))) {
 			fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
 			return EXIT_FAILURE;
 		}
